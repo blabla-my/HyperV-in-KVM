@@ -1,13 +1,3 @@
-New-VMSwitch -Name "SWITCH" -SwitchType Internal
-New-NetIPAddress `
-  -InterfaceAlias "vEthernet (SWITCH)" `
-  -IPAddress 192.168.100.1 `
-  -PrefixLength 24
-New-NetNat `
-  -Name "HyperVNAT" `
-  -InternalIPInterfaceAddressPrefix 192.168.100.0/24
-
-ssh-keygen.exe -t rsa
 $env:Path += ";C:\qemu"
 
 cd C:\Users\Administrator\Hyper-V-Automation-master
@@ -29,3 +19,5 @@ $rootPublicKey = Get-Content "$env:USERPROFILE\.ssh\id_rsa.pub"
     -Gateway 192.168.100.1 `
     -DnsAddresses '8.8.8.8','8.8.4.4' `
     -Verbose
+
+ssh debian@192.168.100.10
