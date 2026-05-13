@@ -63,4 +63,7 @@ ssh -p 2222 Administrator@localhost "powershell -NoProfile -Command \"Expand-Arc
 ```
 
 ## Create VM (ubuntu or debian)
-
+In windows guest, run one of the following scritps:
+```
+./setup_debian_vm.ps1
+```
