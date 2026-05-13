@@ -3,8 +3,16 @@ Run a HyperV hypervisor inside Qemu/KVM. This repo contains scripts for setting 
 
 https://pve.proxmox.com/wiki/Windows_2025_guest_best_practices
 
+(Note: "load driver" needs to load both virtio-scsi and virtio-net drivers, perform "load driver" twice.)
+
 ## VM admin passwd
 admin@123win
+
+## HyperV Installation
+```
+Install-WindowsFeature -Name Hyper-V -IncludeManagementTools -Restart
+Get-WindowsFeature Hyper-V 
+```
 
 ## Setup SSH server
 ```
@@ -19,62 +27,29 @@ In host, set up the key
 cat ~/.ssh/id_rsa.pub | ssh -p 2222 Administrator@localhost "powershell -NoProfile -Command \"New-Item -ItemType Directory -Force C:\ProgramData\ssh | Out-Null; Add-Content -Path C:\ProgramData\ssh\administrators_authorized_keys -Value ([Console]::In.ReadToEnd())\""
 ```
 
-## HyperV Installation
+## HyperV Network Setup
+setup_hyperV_network.ps1
 ```
-Install-WindowsFeature -Name Hyper-V -IncludeManagementTools -Restart
-Get-WindowsFeature Hyper-V 
+New-VMSwitch -Name "SWITCH" -SwitchType Internal
+New-NetIPAddress `
+  -InterfaceAlias "vEthernet (SWITCH)" `
+  -IPAddress 192.168.100.1 `
+  -PrefixLength 24
+New-NetNat `
+  -Name "HyperVNAT" `
+  -InternalIPInterfaceAddressPrefix 192.168.100.0/24
 ```
 
 
 ## Get HyperV Management Scripts
-Setup: `./set_vm_scripts.sh`
-
-
+setup_vm_scripts.sh (on Host)
 ```
-cd .\Hyper-V-Automation-master\
-$env:Path += ";C:\qemu"
-
-$imgFile = .\Get-UbuntuImage.ps1 -Verbose
-$vmName = 'TstUbuntu'
-$fqdn = 'test.example.com'
-$rootPublicKey = Get-Content "$env:USERPROFILE\.ssh\id_rsa.pub"
-
-.\New-VMFromUbuntuImage.ps1 `
-    -SourcePath $imgFile `
-    -VMName $vmName `
-    -FQDN $fqdn `
-    -RootPublicKey $rootPublicKey `
-    -VHDXSizeBytes 20GB `
-    -MemoryStartupBytes 2GB `
-    -ProcessorCount 2 `
-    -IPAddress 10.10.1.196/16 `
-    -Gateway 10.10.1.250 `
-    -DnsAddresses '8.8.8.8','8.8.4.4' `
-    -Verbose
-
-# Your public key is installed. This should not ask you for a password.
-ssh ubuntu@10.10.1.196
+wget https://github.com/fdcastel/Hyper-V-Automation/archive/refs/heads/master.zip -O Hyper-V-Automation.zip
+scp -P2222 Hyper-V-Automation.zip Administrator@localhost:/C:/Users/Administrator/
+wget https://github.com/fdcastel/qemu-img-windows-x64/releases/download/v10.0.0/qemu-img-windows-x64-v10.0.0.zip -O qemu-img.zip
+scp -P2222 qemu-img.zip Administrator@localhost:/C:/Users/Administrator/
+ssh -p 2222 Administrator@localhost "powershell -NoProfile -Command \"Expand-Archive -Path .\Hyper-V-Automation.zip -DestinationPath . -Force\""
 ```
 
-可能需要的步骤：修改语言
-```
-DISM /Online /Add-Capability /CapabilityName:Language.Basic~~~en-US~0.0.1.0
-Set-WinSystemLocale en-US
-Set-Culture en-US
-Set-WinUILanguageOverride en-US
-Set-WinUserLanguageList en-US -Force
-Set-WinHomeLocation -GeoId 244
-```
-可能需要的步骤：创建交换机
-```
-# 如果为空那么需要
-Get-VMSwitch 
-Get-NetAdapter
-
-Name                      InterfaceDescription                    ifIndex Status       MacAddress             LinkSpeed
-----                      --------------------                    ------- ------       ----------             ---------
-以太网                    Intel(R) 82574L Gigabit Network Conn...       4 Up           52-54-00-12-34-56         1 Gbps
-
-New-VMSwitch -Name "SWITCH" -NetAdapterName "以太网" -AllowManagementOS $true
-```
+## Create VM (ubuntu or debian)
 
