@@ -1,6 +1,8 @@
 # HyperV-in-KVM
 Run a HyperV hypervisor inside Qemu/KVM. This repo contains scripts for setting up such an environment.
 
+https://pve.proxmox.com/wiki/Windows_2025_guest_best_practices
+
 ## VM admin passwd
 admin@123win
 
@@ -10,6 +12,11 @@ Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
 Start-Service sshd
 Set-Service -Name sshd -StartupType 'Automatic'
 New-NetFirewallRule -Name sshd -DisplayName "Allow SSH" -Enabled True -Direction Inbound -Protocol TCP -Action Allow -LocalPort 22
+ssh-keygen.exe -t rsa
+```
+In host, set up the key
+```
+cat ~/.ssh/id_rsa.pub | ssh -p 2222 Administrator@localhost "powershell -NoProfile -Command \"New-Item -ItemType Directory -Force C:\ProgramData\ssh | Out-Null; Add-Content -Path C:\ProgramData\ssh\administrators_authorized_keys -Value ([Console]::In.ReadToEnd())\""
 ```
 
 ## HyperV Installation
@@ -18,24 +25,14 @@ Install-WindowsFeature -Name Hyper-V -IncludeManagementTools -Restart
 Get-WindowsFeature Hyper-V 
 ```
 
-## Get HyperV Management Scripts
-(In host) 
-```
-wget https://github.com/fdcastel/Hyper-V-Automation/archive/refs/heads/master.zip
-scp -P2222 master.zip Administrator@localhost:/C:/Users/Administrator/Downloads
-wget https://qemu.weilnetz.de/w64/2025/qemu-w64-setup-20250422.exe 
-scp -P2222 qemu-w64-setup-20250422.exe Administrator@localhost:/C:/Users/Administrator/Downloads
-```
-(In guest)
-```
-Expand-Archive -Path .\Downloads\master.zip -DestinationPath Hyper-V-Automation
-# in vnc , install qemu-img
-cd Downloads
-.\qemu-w64-setup-20250422.exe
 
-cd ..
-cd .\Hyper-V-Automation\Hyper-V-Automation-master\
-$env:Path += ";C:\Program Files\qemu"
+## Get HyperV Management Scripts
+Setup: `./set_vm_scripts.sh`
+
+
+```
+cd .\Hyper-V-Automation-master\
+$env:Path += ";C:\qemu"
 
 $imgFile = .\Get-UbuntuImage.ps1 -Verbose
 $vmName = 'TstUbuntu'
