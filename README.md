@@ -1,6 +1,17 @@
 # HyperV-in-KVM
 Run a HyperV hypervisor inside Qemu/KVM. This repo contains scripts for setting up such an environment.
 
+Firstly, obtain a windows server 2025 ISO from microsoft, and creates Qemu disk image. 
+```
+./setup.sh
+```
+
+Second, launch Qemu/KVM
+```
+./start.sh <path to qemu-system-x86_64
+```
+
+Then, install windows server 2025 following the best practice:
 https://pve.proxmox.com/wiki/Windows_2025_guest_best_practices
 
 (Note: "load driver" needs to load both virtio-scsi and virtio-net drivers, perform "load driver" twice.)
