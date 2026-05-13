@@ -1,6 +1,8 @@
 # HyperV-in-KVM
 Run a HyperV hypervisor inside Qemu/KVM. This repo contains scripts for setting up such an environment.
 
+(This has been verified on a ubuntu20.04 bare metal host but fails on a ubuntu20.04 ESXI host.)
+
 Firstly, obtain a windows server 2025 ISO from microsoft, and creates Qemu disk image. 
 ```
 ./setup.sh
@@ -8,7 +10,7 @@ Firstly, obtain a windows server 2025 ISO from microsoft, and creates Qemu disk 
 
 Second, launch Qemu/KVM
 ```
-./start.sh <path to qemu-system-x86_64
+./start.sh <path to qemu-system-x86_64>
 ```
 
 Then, install windows server 2025 following the best practice:
@@ -37,6 +39,12 @@ In host, set up the key
 ```
 cat ~/.ssh/id_rsa.pub | ssh -p 2222 Administrator@localhost "powershell -NoProfile -Command \"New-Item -ItemType Directory -Force C:\ProgramData\ssh | Out-Null; Add-Content -Path C:\ProgramData\ssh\administrators_authorized_keys -Value ([Console]::In.ReadToEnd())\""
 ```
+
+Then, we can connect the windows guest via ssh:
+```
+ssh -p2222 Administrator@localhost
+```
+The default shell is cmd, run `powershell` before executing any commands.
 
 ## HyperV Network Setup
 setup_hyperV_network.ps1
