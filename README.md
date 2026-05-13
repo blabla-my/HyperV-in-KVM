@@ -13,7 +13,7 @@ Second, launch Qemu/KVM
 ./start.sh <path to qemu-system-x86_64>
 ```
 
-Then, install windows server 2025 following the best practice:
+Then, connect the guest using VNC (at port 5900) and install windows server 2025 following the best practice. It is recommended to use RealVNC viewer because it can send ctrl+alt+del via a button. 
 https://pve.proxmox.com/wiki/Windows_2025_guest_best_practices
 
 (Note: "load driver" needs to load both virtio-scsi and virtio-net drivers, perform "load driver" twice.)
