@@ -75,3 +75,54 @@ In windows guest, run one of the following scritps:
 ```
 ./setup_debian_vm.ps1
 ```
+
+Re-configure the CPU number:
+```
+Stop-VM -Name "TstDebian" -Force
+Set-VMProcessor -VMName "TstDebian" -Count 1
+```
+
+Re-launch the VM
+```
+Start-VM -Name "TstDebian"
+ssh debian@192.168.100.10
+```
+
+## Get HyperV symbols
+install debug utils `setup_dbg.ps1`
+restart the machine, then
+```
+$DbgPath = "${env:ProgramFiles(x86)}\Windows Kits\10\Debuggers\x64"
+& "$DbgPath\kd.exe" -kl
+
+lkd> .symfix C:\Symbols
+lkd> .sympath srv*C:\Symbols*https://msdl.microsoft.com/download/symbols
+lkd> !sym noisy
+lkd> .reload /f 
+```
+
+## Enumerate HyperV VMBus devices in L2 guest
+HyperV's virtual devices are not on pci bus, instead, they are on VMBus.
+Download `lsvmbus` util from linux kernel in L2:
+```
+wget https://raw.githubusercontent.com/torvalds/linux/refs/heads/master/tools/hv/lsvmbus
+```
+Then
+```
+debian@test:~$ ./lsvmbus
+VMBUS ID  1: [Dynamic Memory]
+VMBUS ID  2: [Reserved system device]
+VMBUS ID  3: Synthetic mouse
+VMBUS ID  4: Synthetic keyboard
+VMBUS ID  5: Synthetic framebuffer adapter
+VMBUS ID  6: [Reserved system device]
+VMBUS ID  7: [Guest services]
+VMBUS ID  8: [Heartbeat]
+VMBUS ID  9: [Data Exchange]
+VMBUS ID 10: [Operating system shutdown]
+VMBUS ID 11: [Time Synchronization]
+VMBUS ID 12: [Backup (volume checkpoint)]
+VMBUS ID 13: [Reserved system device]
+VMBUS ID 14: Synthetic SCSI Controller
+VMBUS ID 15: Synthetic network adapter
+```
